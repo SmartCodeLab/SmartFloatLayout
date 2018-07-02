@@ -1,104 +1,94 @@
-group = PROJ_GROUP
-version = PROJ_VERSION
-project.archivesBaseName = PROJ_ARTIFACTID
-
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
 
+version = "1.0.0"    //版本号，以后每次更新library都得更改
+def siteUrl = 'https://github.com/SmartCodeLab/SmartFloatLayout'    //Homepage URL of the library
+def gitUrl = 'https://github.com/SmartCodeLab/SmartFloatLayout.git'    //Git repository url
+def issueUrl = 'https://github.com/SmartCodeLab/SmartFloatLayout/issues'    //issue url of the library
+def linksUrl = 'https://github.com/SmartCodeLab/SmartFloatLayout/wiki'//links url of the
+
+group = "com.smart.floatlayout"    //组织
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                // Add your description here
+                name 'a widget of floatlayout for android'
+                url siteUrl
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'miaolingzi' //your user ID
+                        name 'miaolingzi' //your name
+                        email '645318955@qq.com' //your email
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+//生成源文件
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
 }
-
+//生成文档
 task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
-    classpath += configurations.compile
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    options.encoding "UTF-8"
+    options.charSet 'UTF-8'
+    options.author true
+    options.version true
+    options.links linksUrl
+    failOnError false
 }
-
+//文档打包成jar
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-
-javadoc {
-    options{
-        encoding "UTF-8"
-        charSet 'UTF-8'
-        author true
-        version true
-        links "http://docs.oracle.com/javase/7/docs/api"
-        title "$PROJ_NAME $PROJ_VERSION"
-    }
+//拷贝javadoc文件
+task copyDoc(type: Copy) {
+    from "${buildDir}/docs/"
+    into "docs"
 }
 
+//上传到jcenter所需要的源码文件
 artifacts {
-    archives sourcesJar
     archives javadocJar
+    archives sourcesJar
 }
-
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            name PROJ_NAME
-            description PROJ_DESCRIPTION
-            url PROJ_WEBSITEURL
-            inceptionYear '2016'
-
-            packaging 'aar'
-            groupId PROJ_GROUP
-            artifactId PROJ_ARTIFACTID
-            version PROJ_VERSION
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                connection PROJ_VCSURL
-                url PROJ_WEBSITEURL
-
-            }
-            developers {
-                developer {
-                    id DEVELOPER_ID
-                    name DEVELOPER_NAME
-                    email DEVELOPER_EMAIL
-                }
-            }
-        }
-    }
-}
-
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
 bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : project.property('BINTRAY_USER')
-    key = project.hasProperty('bintrayKey') ? project.property('bintrayKey') : project.property('BINTRAY_KEY')
-
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
     configurations = ['archives']
-
-    dryRun = false
-    publish = true
-
     pkg {
-        userOrg = PROJ_USER_ORG
-        repo = PROJ_USER_MAVEN
-        name = PROJ_NAME
-        licenses = ['Apache-2.0']
-        vcsUrl = PROJ_VCSURL
-        websiteUrl = PROJ_WEBSITEURL
-        issueTrackerUrl = PROJ_ISSUETRACKERURL
+        repo = "maven"    //发布到Bintray的哪个仓库
+        name = "SmartFloatLayout"    //发布到Bintray上的名字
+        desc = "a widget of floatlayout for android"    //项目描述
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        issueTrackerUrl = issueUrl
+        licenses = ["Apache-2.0"]
+        labels = ['android']    //标签
+        publish = true
         publicDownloadNumbers = true
-        version {
-            name = PROJ_VERSION
-            desc = PROJ_DESCRIPTION
-            vcsTag = PROJ_VERSION
-
-            gpg {
-                sign = true
-            }
-        }
+        userOrg = "smartdev"
     }
 }
